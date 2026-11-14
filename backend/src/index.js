@@ -1,0 +1,60 @@
+// API Nha khoa Nụ Cười Việt — chạy: cd backend && npm start  →  http://localhost:4000
+import express from 'express';
+import cookieParser from 'cookie-parser';
+import { pool } from './db.js';
+import { requireAuth } from './auth.js';
+import { xuLyLoi } from './loi.js';
+import authRoutes from './routes/auth.js';
+import chungRoutes from './routes/chung.js';
+import benhNhanRoutes from './routes/benhNhan.js';
+import caTrucRoutes from './routes/caTruc.js';
+import lichHenRoutes from './routes/lichHen.js';
+import khamRoutes from './routes/kham.js';
+import thanhToanRoutes from './routes/thanhToan.js';
+import khoRoutes from './routes/kho.js';
+import quanTriRoutes from './routes/quanTri.js';
+import baoCaoRoutes from './routes/baoCao.js';
+
+const PORT = Number(process.env.CLINIC_API_PORT ?? 4000);
+const app = express();
+app.disable('x-powered-by');
+app.use(express.json({ limit: '1mb' }));
+app.use(cookieParser());
+
+// Gắn cảnh báo từ DB (RAISE WARNING) vào phản hồi JSON dạng object
+app.use((req, res, next) => {
+  const json = res.json.bind(res);
+  res.json = (body) => {
+    if (req.canhBao?.length && body && typeof body === 'object' && !Array.isArray(body)) {
+      body = { ...body, canh_bao: req.canhBao };
+    }
+    return json(body);
+  };
+  next();
+});
+
+app.get('/api/health', async (_req, res) => {
+  await pool.query('SELECT 1');
+  res.json({ status: 'ok', database: pool.options.database });
+});
+
+app.use('/api/auth', authRoutes);
+
+// Mọi API phía dưới cần đăng nhập
+app.use('/api', requireAuth);
+app.use('/api', chungRoutes);
+app.use('/api/benh-nhan', benhNhanRoutes);
+app.use('/api/ca-truc', caTrucRoutes);
+app.use('/api/lich-hen', lichHenRoutes);
+app.use('/api/kham', khamRoutes);
+app.use('/api/thanh-toan', thanhToanRoutes);
+app.use('/api/kho', khoRoutes);
+app.use('/api/quan-tri', quanTriRoutes);
+app.use('/api/bao-cao', baoCaoRoutes);
+
+app.use('/api', (_req, res) => res.status(404).json({ loi: 'Không tìm thấy API' }));
+app.use(xuLyLoi);
+
+app.listen(PORT, '127.0.0.1', () => {
+  console.log(`Clinic API: http://localhost:${PORT}  (database ${pool.options.database})`);
+});

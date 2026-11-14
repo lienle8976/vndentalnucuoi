@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cửa hàng điện máy</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: #f5f6f8; color: #1f2328; }
+    header { background: #fff; border-bottom: 1px solid #e3e5e8; padding: 20px 24px; }
+    header h1 { margin: 0; font-size: 22px; }
+    main { max-width: 1100px; margin: 0 auto; padding: 24px; }
+    .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+    .filters button { border: 1px solid #d0d4d9; background: #fff; border-radius: 999px; padding: 6px 14px; font-size: 14px; cursor: pointer; }
+    .filters button.active { background: #1f6feb; border-color: #1f6feb; color: #fff; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+    .card { background: #fff; border: 1px solid #e3e5e8; border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+    .thumb { height: 140px; border-radius: 8px; background: #eef1f4; display: flex; align-items: center; justify-content: center; color: #8a9199; font-size: 13px; overflow: hidden; }
+    .thumb img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .tag { align-self: flex-start; font-size: 12px; background: #eef1f4; border-radius: 4px; padding: 2px 8px; color: #57606a; }
+    .card h2 { margin: 0; font-size: 16px; }
+    .price { font-weight: 600; color: #cf222e; }
+    .desc { margin: 0; font-size: 13px; color: #57606a; line-height: 1.45; }
+    .status { color: #57606a; }
+    .error { color: #cf222e; }
+  </style>
+</head>
+<body>
+  <header><h1>Cửa hàng điện máy</h1></header>
+  <main>
+    <div class="filters" id="filters"></div>
+    <p class="status" id="status">Đang tải…</p>
+    <div class="grid" id="grid"></div>
+  </main>
+
+  <script>
+    const vnd = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' });
+    const filtersEl = document.getElementById('filters');
+    const gridEl = document.getElementById('grid');
+    const statusEl = document.getElementById('status');
+
+    async function getJson(url) {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error((await res.json()).error ?? res.statusText);
+      return res.json();
+    }
+
+    function el(tag, className, text) {
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      if (text !== undefined) node.textContent = text;
+      return node;
+    }
+
+    async function loadCategories() {
+      const categories = await getJson('/api/categories');
+      const total = categories.reduce((sum, c) => sum + c.product_count, 0);
+      const items = [{ name: null, label: `Tất cả (${total})` },
+        ...categories.map(c => ({ name: c.name, label: `${c.name} (${c.product_count})`, title: c.description }))];
+
+      for (const item of items) {
+        const btn = el('button', item.name === null ? 'active' : '', item.label);
+        if (item.title) btn.title = item.title;
+        btn.addEventListener('click', () => {
+          filtersEl.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          loadProducts(item.name);
+        });
+        filtersEl.append(btn);
+      }
+    }
+
+    async function loadProducts(category) {
+      statusEl.className = 'status';
+      statusEl.textContent = 'Đang tải…';
+      const url = category ? `/api/products?category=${encodeURIComponent(category)}` : '/api/products';
+      const products = await getJson(url);
+
+      gridEl.replaceChildren(...products.map(p => {
+        const card = el('article', 'card');
+        const thumb = el('div', 'thumb', 'Chưa có ảnh');
+        if (p.image) {
+          const img = new Image();
+          img.alt = p.name;
+          img.onload = () => thumb.replaceChildren(img);
+          img.src = p.image;
+        }
+        card.append(thumb, el('span', 'tag', p.category ?? 'chưa phân loại'),
+          el('h2', '', p.name), el('div', 'price', vnd.format(p.price)), el('p', 'desc', p.description ?? ''));
+        return card;
+      }));
+      statusEl.textContent = `${products.length} sản phẩm`;
+    }
+
+    Promise.all([loadCategories(), loadProducts(null)]).catch(err => {
+      statusEl.className = 'status error';
+      statusEl.textContent = `Lỗi: ${err.message}`;
+    });
+  </script>
+</body>
+</html>

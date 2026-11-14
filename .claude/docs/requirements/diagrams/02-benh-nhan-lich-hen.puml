@@ -1,0 +1,59 @@
+' Nhóm: Quản lý bệnh nhân + Quản lý lịch hẹn & ca trực (UC04–UC19)
+@startuml 02-benh-nhan-lich-hen
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Nhân viên" as NV
+actor "Lễ tân" as LT
+actor "Quản lý" as QL
+actor "Dịch vụ SMS" as SMS
+actor "Bệnh nhân" as BN
+
+LT -up-|> NV
+QL -up-|> NV
+
+rectangle "Bệnh nhân & Lịch hẹn" {
+  usecase "UC04 Tra cứu bệnh nhân\n(SĐT / tên / mã BN)" as UC04
+  usecase "UC05 Đăng ký bệnh nhân mới" as UC05
+  usecase "UC06 Cập nhật thông tin\nbệnh nhân" as UC06
+  usecase "UC07 Xem hồ sơ bệnh nhân" as UC07
+  usecase "UC08 Chuyển hồ sơ giấy\nsang hệ thống" as UC08
+  usecase "UC09 Xếp ca trực" as UC09
+  usecase "UC10 Xem lịch trực" as UC10
+  usecase "UC11 Xem lịch hẹn\n(ngày / bác sĩ / ghế)" as UC11
+  usecase "UC12 Tìm khung trống" as UC12
+  usecase "UC13 Đặt lịch hẹn" as UC13
+  usecase "UC14 Đổi lịch hẹn" as UC14
+  usecase "UC15 Hủy lịch hẹn" as UC15
+  usecase "UC16 Nhắc lịch hẹn" as UC16
+  usecase "UC17 Gửi tin nhắn\nnhắc lịch" as UC17
+  usecase "UC18 Tiếp đón bệnh nhân" as UC18
+  usecase "UC19 Ghi nhận không đến" as UC19
+}
+
+NV --> UC04
+NV --> UC07
+NV --> UC10
+NV --> UC11
+LT --> UC05
+LT --> UC06
+LT --> UC13
+LT --> UC14
+LT --> UC15
+LT --> UC16
+LT --> UC18
+LT --> UC19
+QL --> UC09
+
+UC13 ..> UC04 : <<include>>
+UC13 ..> UC12 : <<include>>
+UC14 ..> UC12 : <<include>>
+UC18 ..> UC04 : <<include>>
+UC08 ..> UC05 : <<extend>>\n(BN cũ có hồ sơ giấy)
+UC05 ..> UC13 : <<extend>>\n(chưa có hồ sơ)
+UC13 ..> UC18 : <<extend>>\n(khách vãng lai)
+UC17 ..> UC16 : <<extend>>\n(không nghe máy)
+
+UC17 --> SMS
+SMS --> BN
+@enduml

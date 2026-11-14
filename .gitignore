@@ -1,0 +1,10 @@
+# Chứa mật khẩu database, không commit
+.env
+# Chứa mật khẩu kết nối SQLTools
+.vscode/settings.json
+# Thư viện Node.js, cài lại bằng npm install
+node_modules/
+# Thư mục build của Next.js
+.next/
+# Cấu hình Claude Code cá nhân trên máy
+.claude/settings.local.json

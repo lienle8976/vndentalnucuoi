@@ -1,0 +1,20 @@
+{
+  "name": "clinic-cyber",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Hệ thống quản lý Nha khoa Nụ Cười Việt — backend (Express) + frontend (Next.js) + database (PostgreSQL)",
+  "scripts": {
+    "install:all": "npm install && npm install --prefix backend && npm install --prefix frontend",
+    "db:up": "docker compose up -d",
+    "db:setup": "bash database/ClinicCyberDB/cai_dat.sh",
+    "db:reset": "bash database/ClinicCyberDB/cai_dat.sh --lam-lai",
+    "dev:backend": "npm run dev --prefix backend",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "dev": "concurrently -n backend,frontend -c blue,green \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "build": "npm run build --prefix frontend",
+    "start": "concurrently -n backend,frontend -c blue,green \"npm start --prefix backend\" \"npm start --prefix frontend\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.0"
+  }
+}

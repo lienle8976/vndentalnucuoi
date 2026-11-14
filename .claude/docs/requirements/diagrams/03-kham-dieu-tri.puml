@@ -1,0 +1,40 @@
+' Nhóm: Khám & điều trị (UC20–UC29)
+@startuml 03-kham-dieu-tri
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Bác sĩ" as BS
+actor "Quản lý" as QL
+
+rectangle "Khám & điều trị" {
+  usecase "UC20 Xem danh sách chờ khám" as UC20
+  usecase "UC21 Lập phiếu điều trị" as UC21
+  usecase "UC07 Xem hồ sơ bệnh nhân" as UC07
+  usecase "UC22 Kê đơn thuốc" as UC22
+  usecase "UC23 Gắn dòng điều trị\nvào liệu trình" as UC23
+  usecase "UC24 Tạo liệu trình" as UC24
+  usecase "UC25 Thêm bác sĩ\ncùng thực hiện" as UC25
+  usecase "UC26 Ghi nhận vật tư sử dụng" as UC26
+  usecase "UC27 Ghi chỉ định tái khám" as UC27
+  usecase "UC28 Sửa phiếu điều trị" as UC28
+  usecase "UC29 Xem lịch sử\nchỉnh sửa phiếu" as UC29
+  usecase "UC42 Nhận cảnh báo\ndưới ngưỡng" as UC42
+}
+
+BS --> UC20
+BS --> UC21
+BS --> UC28
+QL --> UC28
+QL --> UC29
+QL --> UC42
+
+UC21 ..> UC07 : <<include>>
+UC21 ..> UC26 : <<include>>
+UC22 ..> UC21 : <<extend>>\n(cần thuốc)
+UC23 ..> UC21 : <<extend>>\n(việc nhiều buổi)
+UC24 ..> UC23 : <<extend>>\n(chưa có liệu trình)
+UC25 ..> UC21 : <<extend>>\n(hai bác sĩ cùng làm)
+UC27 ..> UC21 : <<extend>>\n(cần buổi sau)
+UC42 ..> UC26 : <<extend>>\n(tồn < ngưỡng)
+UC42 ..> UC22 : <<extend>>\n(tồn < ngưỡng)
+@enduml

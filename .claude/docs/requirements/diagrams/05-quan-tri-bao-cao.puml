@@ -1,0 +1,54 @@
+' Nhóm: Đăng nhập, Quản trị hệ thống & Xem báo cáo (UC01–UC03, UC38–UC46)
+@startuml 05-quan-tri-bao-cao
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Nhân viên" as NV
+actor "Quản lý" as QL
+
+QL -up-|> NV
+
+rectangle "Quản trị & Báo cáo" {
+  usecase "UC01 Đăng nhập" as UC01
+  usecase "UC02 Đổi mật khẩu" as UC02
+  usecase "UC03 Quản lý tài khoản\n& phân quyền" as UC03
+  usecase "UC38 Quản lý bảng giá dịch vụ" as UC38
+  usecase "UC39 Quản lý danh mục\nthuốc & vật tư" as UC39
+  usecase "UC40 Nhập kho" as UC40
+  usecase "UC41 Kiểm kê & điều chỉnh tồn" as UC41
+  usecase "UC43 Quản lý danh mục chung\n(ghế, lý do hủy, giờ mở cửa,\ntỷ lệ ăn chia)" as UC43
+  usecase "UC44 Tính chia tiền\ntheo bác sĩ" as UC44
+  usecase "UC46 Xem lịch sử chốt két" as UC46
+  usecase "UC45 Xem báo cáo quản trị" as UC45
+  usecase "UC45.1 Doanh thu theo bác sĩ" as R1
+  usecase "UC45.2 Công suất ghế\ntheo khung giờ" as R2
+  usecase "UC45.3 BN quá 6 tháng\nchưa quay lại" as R3
+  usecase "UC45.4 Thống kê hủy lịch\ntheo dịch vụ & lý do" as R4
+  usecase "UC45.5 Công nợ theo bệnh nhân" as R5
+  usecase "UC45.6 Liệu trình đang dở\n& số buổi còn lại" as R6
+  usecase "UC45.7 Thuốc & vật tư sắp hết" as R7
+  usecase "UC45.8 So sánh doanh thu\nvới tháng trước (%)" as R8
+}
+
+NV --> UC01
+NV --> UC02
+QL --> UC03
+QL --> UC38
+QL --> UC39
+QL --> UC40
+QL --> UC41
+QL --> UC43
+QL --> UC44
+QL --> UC46
+QL --> UC45
+
+UC45 <|-- R1
+UC45 <|-- R2
+UC45 <|-- R3
+UC45 <|-- R4
+UC45 <|-- R5
+UC45 <|-- R6
+UC45 <|-- R7
+UC45 <|-- R8
+UC44 ..> R1 : <<include>>
+@enduml

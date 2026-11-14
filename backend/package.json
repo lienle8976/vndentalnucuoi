@@ -1,0 +1,17 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Backend Node.js (Express) cho hệ thống quản lý Nha khoa Nụ Cười Việt — kết nối ClinicCyberDB",
+  "type": "module",
+  "scripts": {
+    "start": "node --env-file=../.env src/index.js",
+    "dev": "node --watch --env-file=../.env src/index.js"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.16.0"
+  }
+}

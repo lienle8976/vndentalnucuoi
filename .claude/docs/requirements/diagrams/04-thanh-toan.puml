@@ -1,0 +1,35 @@
+' Nhóm: Thanh toán (UC30–UC37)
+@startuml 04-thanh-toan
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Lễ tân" as LT
+actor "Bác sĩ" as BS
+actor "Quản lý" as QL
+
+rectangle "Thanh toán" {
+  usecase "UC30 Tra cứu bảng giá" as UC30
+  usecase "UC31 Lập hóa đơn lượt khám" as UC31
+  usecase "UC32 Áp dụng giảm giá\n(dòng / tổng)" as UC32
+  usecase "UC33 Lập hóa đơn\nđợt liệu trình" as UC33
+  usecase "UC34 Thu tiền\n(tiền mặt / chuyển khoản)" as UC34
+  usecase "UC35 In hóa đơn / biên lai" as UC35
+  usecase "UC36 Xem công nợ bệnh nhân" as UC36
+  usecase "UC37 Chốt két cuối ca" as UC37
+  usecase "UC13 Đặt lịch hẹn" as UC13
+}
+
+LT --> UC30
+BS --> UC30
+LT --> UC31
+LT --> UC33
+LT --> UC34
+LT --> UC36
+LT --> UC37
+QL --> UC36
+
+UC32 ..> UC31 : <<extend>>
+UC32 ..> UC33 : <<extend>>
+UC35 ..> UC34 : <<extend>>
+UC13 ..> UC34 : <<extend>>\n(có chỉ định tái khám)
+@enduml
