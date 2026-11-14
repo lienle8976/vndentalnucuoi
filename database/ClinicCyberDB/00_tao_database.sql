@@ -16,6 +16,11 @@
 CREATE ROLE :"admin_user" WITH LOGIN PASSWORD :'admin_pass'
     NOSUPERUSER NOCREATEROLE NOCREATEDB;
 
+-- Host online (Neon, Supabase...) chạy bằng user không phải superuser: PostgreSQL 16+
+-- yêu cầu người tạo là thành viên của role mới mới đặt được làm OWNER bên dưới.
+-- Với superuser ở máy local thì lệnh này vô hại.
+GRANT :"admin_user" TO CURRENT_USER;
+
 CREATE DATABASE "ClinicCyberDB"
     WITH OWNER = :"admin_user"
          ENCODING = 'UTF8';

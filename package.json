@@ -8,6 +8,8 @@
     "db:up": "docker compose up -d",
     "db:setup": "bash database/ClinicCyberDB/cai_dat.sh",
     "db:reset": "bash database/ClinicCyberDB/cai_dat.sh --lam-lai",
+    "db:deploy-online": "bash database/ClinicCyberDB/trien_khai_online.sh",
+    "db:redeploy-online": "bash database/ClinicCyberDB/trien_khai_online.sh --lam-lai",
     "dev:backend": "npm run dev --prefix backend",
     "dev:frontend": "npm run dev --prefix frontend",
     "dev": "concurrently -n backend,frontend -c blue,green \"npm run dev:backend\" \"npm run dev:frontend\"",

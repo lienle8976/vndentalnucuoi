@@ -2,19 +2,28 @@
 import jwt from 'jsonwebtoken';
 import { q1 } from './db.js';
 
+const PROD = process.env.NODE_ENV === 'production';
 const SECRET = process.env.CLINIC_JWT_SECRET;
 if (!SECRET) throw new Error('Thiếu CLINIC_JWT_SECRET trong .env');
+if (PROD && SECRET.length < 32) throw new Error('CLINIC_JWT_SECRET ở production phải dài ít nhất 32 ký tự');
 
 const COOKIE = 'phien';
 const THOI_HAN_GIO = 12;
+// Production chạy sau HTTPS → cookie chỉ gửi qua HTTPS. Đặt COOKIE_SECURE=false nếu thử bản production qua http.
+const COOKIE_OPTS = {
+  httpOnly: true,
+  sameSite: 'lax',
+  secure: (process.env.COOKIE_SECURE ?? String(PROD)) === 'true',
+  path: '/',
+};
 
 export function datPhien(res, nhanVienId) {
   const token = jwt.sign({ id: nhanVienId }, SECRET, { expiresIn: `${THOI_HAN_GIO}h` });
-  res.cookie(COOKIE, token, { httpOnly: true, sameSite: 'lax', maxAge: THOI_HAN_GIO * 3600 * 1000, path: '/' });
+  res.cookie(COOKIE, token, { ...COOKIE_OPTS, maxAge: THOI_HAN_GIO * 3600 * 1000 });
 }
 
 export function xoaPhien(res) {
-  res.clearCookie(COOKIE, { path: '/' });
+  res.clearCookie(COOKIE, COOKIE_OPTS);
 }
 
 export async function taiNguoiDung(id) {

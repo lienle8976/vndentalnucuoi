@@ -20,6 +20,7 @@ docker compose up -d
 # CSDL phòng khám ClinicCyberDB (user chủ: CLINIC_DB_ADMIN_USER / _PASSWORD trong .env)
 bash database/ClinicCyberDB/cai_dat.sh            # cài mới
 bash database/ClinicCyberDB/cai_dat.sh --lam-lai  # xóa và cài lại từ đầu
+npm run db:deploy-online                          # đưa ClinicCyberDB lên Neon (production, đọc CLINIC_PROD_* trong .env)
 
 # Web phòng khám: backend Node.js (:4000) + frontend Next.js (:3001) — chạy từ thư mục gốc, xem README.md
 npm run install:all     # lần đầu
@@ -82,4 +83,5 @@ Tài liệu chi tiết nằm trong [.claude/docs/](.claude/docs/).
 <!-- Những điều Claude cần tránh hoặc phải luôn làm -->
 - Cấu trúc dự án theo mẫu của thầy: `backend/`, `frontend/`, `database/`, `pgadmin/servers.json`, `docker-compose.yml`, `.env`, `package.json` ở thư mục gốc (lệnh chạy chung). Không gom vào thư mục con kiểu `clinic/api`, `clinic/web`.
 - Không ghi mật khẩu vào file SQL/script; lấy từ `.env` (đã gitignore).
+- Production: DB trên Neon (Singapore). Backend dùng `DATABASE_URL` + `NODE_ENV=production` (xem `backend/.env.production.example`); không có `DATABASE_URL` thì dùng DB Docker local.
 - ClinicCyberDB: ứng dụng phải `SET LOCAL app.nhan_vien_id = '<id>'` trong mỗi transaction để ghi người thao tác.

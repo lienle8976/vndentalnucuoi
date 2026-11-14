@@ -30,6 +30,43 @@ Nếu API chạy ở nơi khác, đặt `CLINIC_API_URL` khi chạy web.
 
 Tài khoản mẫu (mật khẩu `DoiMatKhau@2026`): `quanly` (Quản lý), `bs.long`, `bs.quan`, `bs.ha`, `bs.tam` (Bác sĩ), `lt.anh`, `lt.chau` (Lễ tân).
 
+## Production
+
+### Database online: Neon (PostgreSQL 17, vùng Singapore, gói free)
+
+```bash
+npm run db:deploy-online     # chạy 00 → 04 lên Neon (đọc CLINIC_PROD_* trong .env)
+npm run db:redeploy-online   # XÓA ClinicCyberDB + LienAdmin trên Neon rồi cài lại
+```
+
+- `.env` cần `CLINIC_PROD_OWNER_URL` (tài khoản `neondb_owner` của project Neon) và `CLINIC_PROD_ADMIN_PASSWORD` (mật khẩu `LienAdmin` trên Neon). Mẫu xem trong `.env.example`.
+- Script tạo user `LienAdmin` và database `ClinicCyberDB`, đặt múi giờ mặc định `Asia/Ho_Chi_Minh` ở mức database, rồi nạp bảng, trigger, view và dữ liệu mẫu.
+- Script dùng `psql` trong container `phong_kham_db`, nên cần `npm run db:up` trước.
+
+### Backend production
+
+Backend tự chuyển sang chế độ production khi có các biến sau (mẫu: [backend/.env.production.example](backend/.env.production.example)):
+
+| Biến | Ý nghĩa |
+|---|---|
+| `NODE_ENV=production` | Lắng nghe `0.0.0.0`, cookie `secure`, `trust proxy`, bắt buộc JWT secret ≥ 32 ký tự |
+| `DATABASE_URL` | Chuỗi kết nối Neon (= `CLINIC_PROD_DATABASE_URL` trong `.env`), `sslmode=verify-full` |
+| `CLINIC_JWT_SECRET` | Khóa ký JWT riêng cho production |
+| `PORT` | Host tự cấp |
+
+Không có `DATABASE_URL` thì backend dùng PostgreSQL Docker ở máy như cũ.
+
+Chạy thử backend production ở máy, kết nối Neon (Git Bash):
+
+```bash
+cd backend
+DATABASE_URL="$(grep ^CLINIC_PROD_DATABASE_URL= ../.env | cut -d= -f2-)" \
+NODE_ENV=production COOKIE_SECURE=false PORT=4100 npm start
+# → http://localhost:4100/api/health
+```
+
+Deploy lên host (vd. Render: New Web Service, Root Directory `backend`, Build `npm ci --omit=dev`, Start `npm start`, Health check `/api/health`). Sau đó đặt `CLINIC_API_URL=<địa chỉ backend>` khi build frontend.
+
 ## Màn hình ↔ use case
 
 Sơ đồ + wireframe: [.claude/docs/ui-ux/man-hinh-tong-quan.drawio](.claude/docs/ui-ux/man-hinh-tong-quan.drawio) (mở bằng draw.io / extension *Draw.io Integration* trong VS Code).

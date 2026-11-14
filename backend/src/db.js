@@ -7,14 +7,44 @@ pg.types.setTypeParser(20, (v) => (v === null ? null : Number(v)));
 // date → giữ nguyên chuỗi 'YYYY-MM-DD' để không bị lệch múi giờ
 pg.types.setTypeParser(1082, (v) => v);
 
-export const pool = new pg.Pool({
-  host: process.env.POSTGRES_HOST ?? '127.0.0.1',
-  port: Number(process.env.POSTGRES_PORT ?? 5432),
-  user: process.env.CLINIC_DB_ADMIN_USER,
-  password: process.env.CLINIC_DB_ADMIN_PASSWORD,
-  database: process.env.CLINIC_DB ?? 'ClinicCyberDB',
-  options: '-c timezone=Asia/Ho_Chi_Minh', // current_date, giờ khám... theo giờ Việt Nam
-});
+/**
+ * Cấu hình kết nối:
+ *  - Production (host online): đặt DATABASE_URL, vd.
+ *      postgresql://LienAdmin:<mật_khẩu>@<host>.neon.tech/ClinicCyberDB?sslmode=require
+ *    Múi giờ Asia/Ho_Chi_Minh đã đặt sẵn ở database (ALTER DATABASE ... SET timezone,
+ *    xem database/ClinicCyberDB/trien_khai_online.sh) nên không truyền `options` —
+ *    cổng pooler của Neon/Supabase không nhận tham số này.
+ *  - Local (Docker): dùng các biến rời trong .env như cũ.
+ */
+const DATABASE_URL = process.env.DATABASE_URL?.trim();
+
+export const pool = new pg.Pool(
+  DATABASE_URL
+    ? {
+        connectionString: DATABASE_URL,
+        max: Number(process.env.DB_POOL_MAX ?? 5), // gói free giới hạn số kết nối
+        idleTimeoutMillis: 30_000, // trả kết nối sớm để DB serverless được ngủ
+        connectionTimeoutMillis: 15_000, // Neon free cần vài giây để "thức dậy"
+      }
+    : {
+        host: process.env.POSTGRES_HOST ?? '127.0.0.1',
+        port: Number(process.env.POSTGRES_PORT ?? 5432),
+        user: process.env.CLINIC_DB_ADMIN_USER,
+        password: process.env.CLINIC_DB_ADMIN_PASSWORD,
+        database: process.env.CLINIC_DB ?? 'ClinicCyberDB',
+        options: '-c timezone=Asia/Ho_Chi_Minh', // current_date, giờ khám... theo giờ Việt Nam
+      },
+);
+
+// Mô tả kết nối để ghi log (không lộ mật khẩu)
+export const dbInfo = (() => {
+  if (!DATABASE_URL) return `${pool.options.host}:${pool.options.port}/${pool.options.database}`;
+  const u = new URL(DATABASE_URL);
+  return `${u.hostname}${u.pathname}`;
+})();
+
+// Lỗi của kết nối đang rảnh (vd. host đóng kết nối khi DB ngủ) — ghi log, không làm sập server
+pool.on('error', (e) => console.error('[db] kết nối rảnh bị lỗi:', e.message));
 
 export const q = async (sql, params) => (await pool.query(sql, params)).rows;
 export const q1 = async (sql, params) => (await pool.query(sql, params)).rows[0] ?? null;
